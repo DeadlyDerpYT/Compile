@@ -2,10 +2,11 @@ nasm src/bootloader.asm -f bin -i src -o bootloader.bin
 
 nasm src/ExtendedProgram.asm -f elf64 -i src -o ExtendedProgram.o
 
-cmake CMakeLists.txt -G "Unix Makefiles" -D CMAKE_CXX_COMPILER=x86_64-elf-gcc -D CMAKE_C_COMPILER=x86_64-elf-gcc
+wsl g++ -ffreestanding -mno-red-zone -m64 -c "./src/Kernel.cpp" -o "Kernel.o"
 
-make -f "Makefile"
+ld -Ttext 0x8000 ExtendedProgram.o Kernel.o -o kernel.tmp
+objcopy -O binary kernel.tmp kernel.bin
 
-copy /b bootloader.bin+kernel.bin bootloader.flp
-
+copy /b bootloader.bin+kernel.bin bootloader.bin
+"C:\Program Files\qemu\qemu-system-x86_64" -fda bootloader.bin
 pause
